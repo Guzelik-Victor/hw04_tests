@@ -1,5 +1,6 @@
 from http import HTTPStatus
 from django.test import TestCase, Client
+from django.urls import reverse
 
 from posts.models import Post, Group, User
 
@@ -28,11 +29,14 @@ class PostURLTests(TestCase):
     def test_url_not_authorized_client(self):
         """Страницы доступные всем пользователям."""
         url_available_to_any_user = {
-            '/': HTTPStatus.OK,
-            '/group/slug/': HTTPStatus.OK,
-            '/profile/Thank_you/': HTTPStatus.OK,
-            '/posts/1/': HTTPStatus.OK,
-            '/any/': HTTPStatus.NOT_FOUND
+            reverse('posts:index'): HTTPStatus.OK,
+            reverse('posts:group_list', kwargs={'slug': self.group.slug}):
+            HTTPStatus.OK,
+            reverse('posts:profile', kwargs={'username': self.post.author}):
+            HTTPStatus.OK,
+            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}):
+            HTTPStatus.OK,
+            '/non_existent url/': HTTPStatus.NOT_FOUND
         }
 
         for url, expected in url_available_to_any_user.items():
@@ -42,12 +46,14 @@ class PostURLTests(TestCase):
 
     def test_posts_create_url_exists_at_desired_location(self):
         """Страница /create/ доступна авторизованному пользователю."""
-        response = self.authorized_client.get('/create/')
+        response = self.authorized_client.get(reverse('posts:post_create'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_posts_edit_url_exists_at_desired_location(self):
         """Страница /posts/edit/ доступна автору."""
-        response = self.authorized_client.get('/posts/1/edit/')
+        response = self.authorized_client.get(
+            reverse('posts:post_detail', kwargs={'post_id': self.post.pk})
+        )
         # Сверяем данные текущего пользователя с данными автора поста
         self.assertEqual(response.wsgi_request.user, self.post.author)
         self.assertEqual(response.status_code, HTTPStatus.OK)
@@ -56,21 +62,27 @@ class PostURLTests(TestCase):
         """Страница /posts/create/ перенаправляет анонимного
         пользователя.
         """
-        response = self.guest_client.get('/create/', follow=True)
-        self.assertRedirects
-        (
+        response = self.guest_client.get(
+            reverse('posts:post_create'),
+            follow=True
+        )
+        self.assertRedirects(
             response, '/auth/login/?next=/create/'
         )
 
     def test_urls_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
         templates_url_names = {
-            '/': 'posts/index.html',
-            '/group/slug/': 'posts/group_list.html',
-            '/profile/Thank_you/': 'posts/profile.html',
-            '/create/': 'posts/create_post.html',
-            '/posts/1/edit/': 'posts/create_post.html',
-            '/posts/1/': 'posts/post_detail.html'
+            reverse('posts:index'): 'posts/index.html',
+            reverse('posts:group_list', kwargs={'slug': self.group.slug}):
+            'posts/group_list.html',
+            reverse('posts:profile', kwargs={'username': self.post.author}):
+            'posts/profile.html',
+            reverse('posts:post_create'): 'posts/create_post.html',
+            reverse('posts:post_edit', kwargs={'post_id': self.post.pk}):
+            'posts/create_post.html',
+            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}):
+            'posts/post_detail.html'
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):

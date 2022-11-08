@@ -41,21 +41,17 @@ class PostPagesTests(TestCase):
         """URL-адрес использует соответствующий шаблон."""
         templates_pages_names = {
             reverse('posts:index'): 'posts/index.html',
-            reverse('posts:group_list', kwargs={'slug': self.group.slug}):
-            (
+            reverse('posts:group_list', kwargs={'slug': self.group.slug}): (
                 'posts/group_list.html'
             ),
-            reverse('posts:profile', kwargs={'username': self.post.author}):
-            (
+            reverse('posts:profile', kwargs={'username': self.post.author}): (
                 'posts/profile.html'
             ),
-            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}):
-            (
+            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}): (
                 'posts/post_detail.html'
             ),
             reverse('posts:post_create'): 'posts/create_post.html',
-            reverse('posts:post_edit', kwargs={'post_id': self.post.pk}):
-            (
+            reverse('posts:post_edit', kwargs={'post_id': self.post.pk}): (
                 'posts/create_post.html'
             ),
         }
@@ -72,17 +68,11 @@ class PostPagesTests(TestCase):
         При создании поста, он появляется на этих страницах."""
         list_of_templates = [
             self.authorized_client.get(reverse('posts:index')),
-            self.authorized_client.get
-            (
-                reverse('posts:group_list',
-                        kwargs={'slug': self.group.slug}
-                        )
+            self.authorized_client.get(
+                reverse('posts:group_list', kwargs={'slug': self.group.slug})
             ),
-            self.authorized_client.get
-            (
-                reverse('posts:profile',
-                        kwargs={'username': self.post.author}
-                        )
+            self.authorized_client.get(
+                reverse('posts:profile', kwargs={'username': self.post.author})
             ),
         ]
         for templates in list_of_templates:
@@ -94,31 +84,29 @@ class PostPagesTests(TestCase):
 
     def test_additional_verification_when_creating_a_post(self):
         """Пост не попадает в группу, для которой не был предназначен."""
-        response = self.authorized_client.get(reverse(
-            'posts:group_list',
-            kwargs={'slug': self.group_test.slug})
+        response = self.authorized_client.get(
+            reverse('posts:group_list', kwargs={'slug': self.group_test.slug})
         )
         post_test_group = response.context.get('page_obj').object_list
         self.assertEqual(post_test_group.count(), INDEX_ZERO)
 
     def test_correct_working_post_detail_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
-        response = self.authorized_client.get(reverse(
-            'posts:post_detail',
-            kwargs={'post_id': self.post.pk})
+        response = self.authorized_client.get(
+            reverse('posts:post_detail', kwargs={'post_id': self.post.pk})
         )
-        self.assertEqual(response.context.get('post').text, self.post.text)
-        self.assertEqual(response.context.get('post').author, self.post.author)
-        self.assertEqual(response.context.get('post').group, self.post.group)
+        response = response.context.get('post')
+        self.assertEqual(response.text, self.post.text)
+        self.assertEqual(response.author, self.post.author)
+        self.assertEqual(response.group, self.post.group)
 
     def test_post_create_and_edit_correct_context(self):
         """Шаблоны post_create, post_edit сформированы
         с правильным контекстом."""
         list_of_templates = [
             self.authorized_client.get(reverse('posts:post_create')),
-            self.authorized_client.get(reverse(
-                'posts:post_edit',
-                kwargs={'post_id': self.post.pk})
+            self.authorized_client.get(
+                reverse('posts:post_edit', kwargs={'post_id': self.post.pk})
             )
         ]
         # поля pub_date, author формирует Django - ему мы доверяем!)
@@ -163,8 +151,10 @@ class PaginatorViewsTest(TestCase):
         list_of_templates = [
             reverse('posts:index'),
             reverse('posts:group_list', kwargs={'slug': self.group.slug}),
-            reverse('posts:profile',
-                    kwargs={'username': self.posts[INDEX_ZERO].author}),
+            reverse(
+                'posts:profile',
+                kwargs={'username': self.posts[INDEX_ZERO].author}
+            ),
         ]
         for template in list_of_templates:
             response = self.authorized_client.get(template)
