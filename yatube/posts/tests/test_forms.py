@@ -5,8 +5,6 @@ from posts.models import Post, Group, User
 from django.test import Client, TestCase
 from django.urls import reverse
 
-STEP_COUNT = 1
-
 
 class PostCreateFormTests(TestCase):
     @classmethod
@@ -42,7 +40,7 @@ class PostCreateFormTests(TestCase):
             response,
             reverse('posts:profile', kwargs={'username': self.user})
         )
-        self.assertEqual(Post.objects.count(), post_count + STEP_COUNT)
+        self.assertEqual(Post.objects.count(), post_count + 1)
         self.assertTrue(
             Post.objects.filter(
                 text=form_data['text'],
@@ -65,7 +63,7 @@ class PostCreateFormTests(TestCase):
             response,
             reverse('posts:profile', kwargs={'username': self.user})
         )
-        self.assertEqual(Post.objects.count(), post_count + STEP_COUNT)
+        self.assertEqual(Post.objects.count(), post_count + 1)
         self.assertTrue(
             Post.objects.filter(
                 text=form_data['text'],

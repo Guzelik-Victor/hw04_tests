@@ -30,12 +30,15 @@ class PostURLTests(TestCase):
         """Страницы доступные всем пользователям."""
         url_available_to_any_user = {
             reverse('posts:index'): HTTPStatus.OK,
-            reverse('posts:group_list', kwargs={'slug': self.group.slug}):
-            HTTPStatus.OK,
-            reverse('posts:profile', kwargs={'username': self.post.author}):
-            HTTPStatus.OK,
-            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}):
-            HTTPStatus.OK,
+            reverse(
+                'posts:group_list', kwargs={'slug': self.group.slug}
+            ): HTTPStatus.OK,
+            reverse(
+                'posts:profile', kwargs={'username': self.post.author}
+            ): HTTPStatus.OK,
+            reverse(
+                'posts:post_detail', kwargs={'post_id': self.post.pk}
+            ): HTTPStatus.OK,
             '/non_existent url/': HTTPStatus.NOT_FOUND
         }
 
@@ -74,15 +77,19 @@ class PostURLTests(TestCase):
         """URL-адрес использует соответствующий шаблон."""
         templates_url_names = {
             reverse('posts:index'): 'posts/index.html',
-            reverse('posts:group_list', kwargs={'slug': self.group.slug}):
-            'posts/group_list.html',
-            reverse('posts:profile', kwargs={'username': self.post.author}):
-            'posts/profile.html',
+            reverse(
+                'posts:group_list', kwargs={'slug': self.group.slug}
+            ): 'posts/group_list.html',
+            reverse(
+                'posts:profile', kwargs={'username': self.post.author}
+            ): 'posts/profile.html',
             reverse('posts:post_create'): 'posts/create_post.html',
-            reverse('posts:post_edit', kwargs={'post_id': self.post.pk}):
-            'posts/create_post.html',
-            reverse('posts:post_detail', kwargs={'post_id': self.post.pk}):
-            'posts/post_detail.html'
+            reverse(
+                'posts:post_edit', kwargs={'post_id': self.post.pk}
+            ): 'posts/create_post.html',
+            reverse(
+                'posts:post_detail', kwargs={'post_id': self.post.pk}
+            ): 'posts/post_detail.html'
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):

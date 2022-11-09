@@ -8,7 +8,6 @@ from posts.views import POSTS_PER_PAGE
 
 POSTS_FOR_PAGINATOR_TEST = 13
 POSTS_PER_PAGE_TEST = 3
-INDEX_ZERO = 0
 NUMBER_OF_TEMPLATES = 2
 
 
@@ -77,7 +76,7 @@ class PostPagesTests(TestCase):
         ]
         for templates in list_of_templates:
             response = templates
-            first_object = response.context['page_obj'][INDEX_ZERO]
+            first_object = response.context['page_obj'][0]
             self.assertEqual(first_object.text, self.post.text)
             self.assertEqual(first_object.author, self.post.author)
             self.assertEqual(first_object.group, self.post.group)
@@ -88,17 +87,23 @@ class PostPagesTests(TestCase):
             reverse('posts:group_list', kwargs={'slug': self.group_test.slug})
         )
         post_test_group = response.context.get('page_obj').object_list
-        self.assertEqual(post_test_group.count(), INDEX_ZERO)
+        self.assertEqual(post_test_group.count(), 0)
+        # если убрать весь тест сверху и оставить вот такой,
+        # один тест,- это норм, или не совсем понятно для читающего?
+        # подскажите .. Спасибо!)
+        self.assertNotEqual(
+            self.group.posts.count, self.group_test.posts.count
+        )
 
     def test_correct_working_post_detail_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
         response = self.authorized_client.get(
             reverse('posts:post_detail', kwargs={'post_id': self.post.pk})
         )
-        response = response.context.get('post')
-        self.assertEqual(response.text, self.post.text)
-        self.assertEqual(response.author, self.post.author)
-        self.assertEqual(response.group, self.post.group)
+        response_context = response.context.get('post')
+        self.assertEqual(response_context.text, self.post.text)
+        self.assertEqual(response_context.author, self.post.author)
+        self.assertEqual(response_context.group, self.post.group)
 
     def test_post_create_and_edit_correct_context(self):
         """Шаблоны post_create, post_edit сформированы
@@ -152,8 +157,7 @@ class PaginatorViewsTest(TestCase):
             reverse('posts:index'),
             reverse('posts:group_list', kwargs={'slug': self.group.slug}),
             reverse(
-                'posts:profile',
-                kwargs={'username': self.posts[INDEX_ZERO].author}
+                'posts:profile', kwargs={'username': self.posts[0].author}
             ),
         ]
         for template in list_of_templates:
